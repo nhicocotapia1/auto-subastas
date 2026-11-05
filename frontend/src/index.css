@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #e8eef8;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply font-sans text-slate-800 antialiased;
+    /* Fondo azul claro con ondas suaves, como en los prototipos */
+    background:
+      radial-gradient(1200px 500px at 110% 110%, rgba(38, 76, 133, 0.18), transparent 60%),
+      radial-gradient(900px 400px at -10% 100%, rgba(74, 111, 168, 0.14), transparent 60%),
+      radial-gradient(700px 300px at 50% -10%, rgba(179, 198, 227, 0.35), transparent 70%),
+      linear-gradient(180deg, #f4f7fc 0%, #e8eef8 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  h1, h2, h3 {
+    @apply text-navy-700;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-navy-100 bg-white/95 shadow-card;
+  }
+  .label {
+    @apply mb-1 block text-sm font-semibold text-navy-800;
+  }
+  .input {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition
+      placeholder:text-slate-400 focus:border-navy-500 focus:ring-2 focus:ring-navy-200 disabled:bg-slate-100;
+  }
+  .input-error {
+    @apply border-carmesi focus:border-carmesi focus:ring-red-100;
+  }
+  .field-error {
+    @apply mt-1 text-xs font-medium text-carmesi;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .tabla th {
+    @apply whitespace-nowrap bg-navy-50 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-navy-700;
+  }
+  .tabla td {
+    @apply border-t border-slate-100 px-3 py-2.5 text-sm;
+  }
+  .code-block {
+    @apply overflow-x-auto rounded-lg bg-navy-900 p-4 font-mono text-xs leading-relaxed text-navy-50;
+  }
+}
+
+/* Animaciones */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up { animation: slide-up 0.25s ease-out; }
+.animate-fade-in { animation: fade-in 0.2s ease-out; }
+@keyframes flash {
+  0% { background-color: rgba(22, 163, 74, 0.25); }
+  100% { background-color: transparent; }
+}
+.animate-flash { animation: flash 1.2s ease-out; }
