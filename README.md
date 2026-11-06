@@ -1,3 +1,6 @@
+## URL DE PRUEBAS
+https://auto-subastas-production.up.railway.app
+
 # Auto-Subastas
 
 Plataforma web para la subasta de vehículos siniestrados y repuestos en desarme.
@@ -140,3 +143,5 @@ En **Panel de control → Consultas** (cuenta admin) se ejecutan y presentan 5 c
 1. Sube el repositorio a GitHub y crea un proyecto en Railway desde el repo (usa el `Dockerfile`).
 2. Variables de entorno: `MONGO_URI`, `MONGO_DB`, `JWT_SECRET`, `FRONTEND_ORIGIN` (la URL pública de Railway).
 3. El mismo contenedor sirve la API y el frontend compilado.
+
+
