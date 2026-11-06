@@ -32,15 +32,17 @@ export function Navbar() {
     `relative px-1 py-1 text-sm font-semibold transition ${isActive ? 'text-white after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:rounded after:bg-exito' : 'text-navy-100 hover:text-white'}`
 
   return (
-    <header className="sticky top-0 z-40 overflow-hidden bg-navy-800 shadow-lg">
+    <header className="sticky top-0 z-40 bg-navy-800 shadow-lg">
       {/* Fondo decorativo con siluetas de autos, como en los prototipos */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-700 to-navy-800" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-700 to-navy-800" />
       <svg aria-hidden viewBox="0 0 600 80" className="pointer-events-none absolute right-0 top-0 h-full w-[60%] opacity-[0.12]" preserveAspectRatio="xMaxYMid slice">
         <path d="M40 62 C70 38 120 30 170 31 C215 32 240 40 270 52 L300 56 L302 66 L40 66 Z" fill="#fff" />
         <circle cx="90" cy="66" r="11" fill="#0B2146" /><circle cx="250" cy="66" r="11" fill="#0B2146" />
         <path d="M320 64 C350 34 410 26 470 27 C520 28 550 38 580 52 L600 54 L600 68 L320 68 Z" fill="#fff" />
         <circle cx="380" cy="68" r="12" fill="#0B2146" /><circle cx="545" cy="68" r="12" fill="#0B2146" />
       </svg>
+      </div>
 
       <nav className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Logo />
@@ -56,7 +58,7 @@ export function Navbar() {
                 <User className="h-4 w-4" /> {usuario.nombre.split(' ')[0]} <ChevronDown className="h-3.5 w-3.5" />
               </button>
               {menuPerfil && (
-                <div className="animate-fade-in absolute right-0 mt-2 w-60 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-xl">
+                <div className="animate-fade-in absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-xl">
                   <div className="border-b border-slate-100 px-4 py-3">
                     <p className="truncate text-sm font-bold text-navy-800">{usuario.nombre}</p>
                     <p className="truncate text-xs text-slate-500">{usuario.email}</p>
