@@ -28,7 +28,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={{ notificar }}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 top-16 z-[60] flex flex-col items-center gap-2 px-3 sm:items-end sm:pr-6" aria-live="polite">
+      <div className="pointer-events-none fixed inset-x-0 top-16 z-[60] flex flex-col items-center gap-2 px-3 sm:bottom-6 sm:top-auto sm:items-end sm:pr-6" aria-live="polite">
         {toasts.map(({ id, tipo, mensaje }) => {
           const { clase, Icono } = ESTILOS[tipo]
           return (
