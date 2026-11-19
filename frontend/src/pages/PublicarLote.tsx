@@ -13,6 +13,8 @@ const BORRADOR_KEY = 'as_borrador_lote'
 const MARCAS = ['Chevrolet', 'Ford', 'Honda', 'Hyundai', 'Kia', 'Mazda', 'Mitsubishi', 'Nissan', 'Peugeot', 'Suzuki', 'Toyota', 'Volkswagen']
 const DURACIONES = [[24, '24 horas (1 día)'], [48, '48 horas (2 días)'], [72, '72 horas (3 días)'], [120, '5 días'], [168, '7 días']]
 const VISTAS_FOTO = ['frontal', 'motor', 'chasis', 'habitaculo', 'lateral', 'trasera', 'superior', 'detalle']
+// Vistas obligatorias del peritaje (RF07): un vehículo debe tener estas 4 fotos; una pieza, al menos 1
+const VISTAS_OBLIGATORIAS = ['frontal', 'motor', 'chasis', 'habitaculo']
 const MAX_MB = 10
 
 interface Foto { archivo: File; url: string; vista: string }
@@ -63,14 +65,23 @@ export default function PublicarLote() {
   const agregarFotos = (lista: FileList | null) => {
     if (!lista) return
     const nuevas: Foto[] = []
+    const usadas = fotos.map((p) => p.vista)
     for (const a of Array.from(lista)) {
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(a.type)) { notificar(`"${a.name}" no es JPG, PNG o WEBP.`, 'error'); continue }
       if (a.size > MAX_MB * 1024 * 1024) { notificar(`"${a.name}" supera los ${MAX_MB} MB.`, 'error'); continue }
-      nuevas.push({ archivo: a, url: URL.createObjectURL(a), vista: VISTAS_FOTO[(fotos.length + nuevas.length) % 4] })
+      const vista = (esVehiculo ? VISTAS_OBLIGATORIAS.find((v) => !usadas.includes(v)) : undefined) ?? (esVehiculo ? 'detalle' : 'superior')
+      usadas.push(vista)
+      nuevas.push({ archivo: a, url: URL.createObjectURL(a), vista })
     }
     if (fotos.length + nuevas.length > 8) { notificar('Máximo 8 fotos por lote.', 'error'); return }
     setFotos((p) => [...p, ...nuevas])
+    if (errores.fotos) setErrores((e) => ({ ...e, fotos: '' }))
   }
+
+  // Vistas obligatorias que todavía no tienen foto
+  const vistasFaltantes = esVehiculo
+    ? VISTAS_OBLIGATORIAS.filter((v) => !fotos.some((p) => p.vista === v))
+    : (fotos.length === 0 ? ['una foto'] : [])
 
   const validar = () => {
     const e: Record<string, string> = {}
@@ -86,6 +97,11 @@ export default function PublicarLote() {
       if (f.marca.trim().length < 2) e.marca = 'Indica la marca del vehículo de origen.'
     }
     if (f.dictamen.trim().length < 10) e.dictamen = 'Describe el peritaje con al menos 10 caracteres.'
+    if (vistasFaltantes.length) {
+      e.fotos = esVehiculo
+        ? `Faltan fotos obligatorias: ${vistasFaltantes.map((v) => VISTAS[v]).join(', ')}.`
+        : 'Debes subir al menos una foto de la pieza.'
+    }
     if (!Number(f.precio_base) || Number(f.precio_base) <= 0) e.precio_base = 'Ingresa un precio base mayor a $0.'
     if (f.incremento_minimo && Number(f.incremento_minimo) <= 0) e.incremento_minimo = 'El incremento debe ser mayor a $0.'
     setErrores(e)
@@ -256,18 +272,42 @@ export default function PublicarLote() {
         </Paso>
 
         <Paso n={4} titulo="Carga multimedia de peritaje">
+          {/* Lista de fotos obligatorias: verde si ya está, rojo con * si falta */}
+          <div className="mb-3">
+            <p className="mb-2 text-sm font-semibold text-navy-800">
+              Fotos obligatorias <span className="text-carmesi">*</span>
+              <span className="ml-1 font-normal text-slate-500">
+                {esVehiculo ? '(una por cada vista; las demás vistas son opcionales)' : '(al menos una foto de la pieza)'}
+              </span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(esVehiculo ? VISTAS_OBLIGATORIAS : ['pieza']).map((v) => {
+                const lista = esVehiculo ? fotos.some((p) => p.vista === v) : fotos.length > 0
+                return (
+                  <span key={v} className={`chip ring-1 ${lista ? 'bg-green-50 text-exito ring-green-200' : 'bg-red-50 text-carmesi ring-red-200'}`}>
+                    {lista ? <Check className="h-3.5 w-3.5" /> : <span aria-hidden>*</span>}
+                    {esVehiculo ? VISTAS[v] : 'Foto de la pieza'}
+                    <span className="sr-only">{lista ? ' (cargada)' : ' (obligatoria, falta)'}</span>
+                  </span>
+                )
+              })}
+            </div>
+          </div>
           <div
             onDragOver={(e) => { e.preventDefault(); setArrastrando(true) }}
             onDragLeave={() => setArrastrando(false)}
             onDrop={(e) => { e.preventDefault(); setArrastrando(false); agregarFotos(e.dataTransfer.files) }}
-            className={`flex flex-col items-center gap-2 rounded-xl border-2 border-dashed p-6 text-center transition ${arrastrando ? 'border-exito bg-green-50' : 'border-navy-200 bg-navy-50/50'}`}>
+            className={`flex flex-col items-center gap-2 rounded-xl border-2 border-dashed p-6 text-center transition ${arrastrando ? 'border-exito bg-green-50' : errores.fotos ? 'border-carmesi bg-red-50/40' : 'border-navy-200 bg-navy-50/50'}`}>
             <UploadCloud className="h-9 w-9 text-navy-500" />
-            <p className="text-sm font-semibold text-navy-800">Arrastra las fotos técnicas aquí (Frontal, Motor, Chasis, Habitáculo).</p>
+            <p className="text-sm font-semibold text-navy-800">
+              {esVehiculo ? 'Arrastra las fotos técnicas aquí: Frontal, Motor, Chasis y Habitáculo son obligatorias.' : 'Arrastra aquí las fotos de la pieza (al menos una).'}
+            </p>
             <p className="text-xs text-slate-500">Formato JPG/PNG/WEBP hasta {MAX_MB} MB · máximo 8 fotos</p>
             <Button type="button" variante="secundario" tamano="sm" onClick={() => inputFile.current?.click()}>Seleccionar archivos</Button>
             <input ref={inputFile} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden
               onChange={(e) => { agregarFotos(e.target.files); e.target.value = '' }} />
           </div>
+          {errores.fotos && <p className="field-error" role="alert">{errores.fotos}</p>}
           {fotos.length > 0 && (
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {fotos.map((p, i) => (
@@ -283,8 +323,8 @@ export default function PublicarLote() {
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[11px] text-slate-400">{(p.archivo.size / 1024 / 1024).toFixed(1)} MB</span>
                       <select className="rounded border border-slate-200 px-1 py-0.5 text-[11px]" value={p.vista} aria-label="Tipo de vista"
-                        onChange={(e) => setFotos(fotos.map((x, j) => j === i ? { ...x, vista: e.target.value } : x))}>
-                        {VISTAS_FOTO.map((v) => <option key={v} value={v}>{VISTAS[v]}</option>)}
+                        onChange={(e) => { setFotos(fotos.map((x, j) => j === i ? { ...x, vista: e.target.value } : x)); if (errores.fotos) setErrores((er) => ({ ...er, fotos: '' })) }}>
+                        {VISTAS_FOTO.map((v) => <option key={v} value={v}>{VISTAS[v]}{esVehiculo && VISTAS_OBLIGATORIAS.includes(v) ? ' *' : ''}</option>)}
                       </select>
                     </div>
                   </div>
